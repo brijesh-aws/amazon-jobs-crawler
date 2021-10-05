@@ -56,8 +56,14 @@ def amazon_job(number_page=10):
         # Sorting recent/relevant
         # &category[]=solutions-architect
 
-        URL = "https://www.amazon.jobs/en/search?offset={}&result_limit=10&sort=recent&category[]=&country[]=USA&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=&base_query=&city=&country=&region=&county=&query_options=&".format(
+        jobCategories = os.environ['jobCategories']
+
+
+        URL = "https://www.amazon.jobs/en/search?offset={}&result_limit=10&sort=recent&country[]=USA&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=&base_query=&city=&country=&region=&county=&query_options=".format(
             str(10 * i))
+
+        for category in jobCategories.split( "," ):
+            URL = URL + "&category[]={}".format( category.strip() )
 
         options = Options()
         options.binary_location = '/opt/headless-chromium'
@@ -83,9 +89,6 @@ def amazon_job(number_page=10):
         job_link = []
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-
-        print( "Main Soup : ", soup )
-        print( soup.findAll("div", {"class": "job-tile"}) )
 
         for td in soup.findAll("div", {"class": "job-tile"}):
 

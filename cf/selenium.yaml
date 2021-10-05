@@ -85,6 +85,7 @@ Resources:
         Variables:
           tableName: !Ref AmazonJobDetailsTable
           searchPages: !Ref SearchPages
+          jobCategories: solutions-architect,software-development
       Policies:
         - AWSLambdaExecute
         - CloudWatchFullAccess

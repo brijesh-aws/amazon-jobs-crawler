@@ -48,7 +48,7 @@ Resources:
     Properties:
       Timeout: 600
       MemorySize: 2048
-      CodeUri: s3://innovalab-working-bucket/b67588ab1452c5f7ff49c435700e669b
+      CodeUri: s3://innovalab-working-bucket/718aac45c937caadd774d0f3f5dd34dc
       FunctionName: amazonJobCrawler
       Handler: index.lambda_handler
       Runtime: python3.6
@@ -62,6 +62,7 @@ Resources:
             Ref: AmazonJobDetailsTable
           searchPages:
             Ref: SearchPages
+          jobCategories: solutions-architect,software-development
       Policies:
       - AWSLambdaExecute
       - CloudWatchFullAccess
