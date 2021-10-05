@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+
+  SearchPages:
+    Description: Name of existing S3 bucket which will hold ADO Pipelines data & scripts
+    Type: Number
+    Default: 10
+
+Resources:
+
+  SeleniumLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: selenium-layer
+      Description: Selenium Python libraries
+      ContentUri: ../lambda-layer/selenium/python.zip
+      CompatibleRuntimes:
+        - python3.6
+
+  ChromeHeadlessLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: chrome-headless-layer
+      Description: Chrome Headless Python libraries
+      ContentUri: ../lambda-layer/chromedriver/chromedriver-headless.zip
+      CompatibleRuntimes:
+        - python3.6
+
+  AmazonJobDetailsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "AMAZON_JOB_DETAILS"
+      SSESpecification:
+        KMSMasterKeyId: alias/aws/dynamodb
+        SSEEnabled: 'true'
+        SSEType: KMS
+      AttributeDefinitions:
+        - AttributeName: job_id
+          AttributeType: S
+        - AttributeName: job_post_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: job_id
+          KeyType: HASH
+        - AttributeName: job_post_date
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+#      GlobalSecondaryIndexes:
+#        - IndexName: JOB-EVENT-TYPE-index
+#          KeySchema:
+#            - AttributeName: job_title
+#              KeyType: HASH
+#            - AttributeName: event_name
+#              KeyType: RANGE
+#          ProvisionedThroughput:
+#            ReadCapacityUnits: 5
+#            WriteCapacityUnits: 5
+#          Projection:
+#            ProjectionType: ALL
+
+  AmazonJobCrawlerLF:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 600
+      MemorySize: 2048
+      CodeUri: ../lambda/amazonJobCrawler
+      FunctionName: amazonJobCrawler
+      Handler: index.lambda_handler
+      Runtime: python3.6
+      AutoPublishAlias: prod
+#      VpcConfig:
+#        SecurityGroupIds:
+#          - !Ref SecurityGroup1
+#        SubnetIds:
+#          - !Ref SubnetId1
+#          - !Ref SubnetId2
+      Layers:
+        - !Ref ChromeHeadlessLayer
+        - !Ref SeleniumLayer
+      Environment:
+        Variables:
+          tableName: !Ref AmazonJobDetailsTable
+          searchPages: !Ref SearchPages
+      Policies:
+        - AWSLambdaExecute
+        - CloudWatchFullAccess
+        - AmazonS3FullAccess
+        - AmazonDynamoDBFullAccess
+
+

@@ -1,0 +1,3 @@
+pip install -t selenium/python/lib/python3.6/site-packages selenium==3.8.0
+cd selenium
+zip -r python.zip python/

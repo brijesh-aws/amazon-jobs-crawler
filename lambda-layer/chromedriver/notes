@@ -1,0 +1,20 @@
+### For Chrome Driver
+
+mkdir -p chromedriver
+cd chromedriver
+curl -SL https://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip > chromedriver.zip
+unzip chromedriver.zip
+rm chromedriver.zip
+
+### For Chrome Setup
+
+curl -SL https://github.com/adieuadieu/serverless-chrome/releases/download/v1.0.0-41/stable-headless-chromium-amazonlinux-2017-03.zip > headless-chromium.zip
+unzip headless-chromium.zip
+rm headless-chromium.zip
+
+
+### Compress/Combine both binaries
+
+$ ls
+chromedriver headless-chromium
+$ zip -r chromedriver-headless.zip chromedriver headless-chromium

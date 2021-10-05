@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  SearchPages:
+    Description: Name of existing S3 bucket which will hold ADO Pipelines data & scripts
+    Type: Number
+    Default: 10
+Resources:
+  SeleniumLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: selenium-layer
+      Description: Selenium Python libraries
+      ContentUri: s3://innovalab-working-bucket/51eddcc90025061586ce80b938bbe1aa
+      CompatibleRuntimes:
+      - python3.6
+  ChromeHeadlessLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: chrome-headless-layer
+      Description: Chrome Headless Python libraries
+      ContentUri: s3://innovalab-working-bucket/e52a3193caa7148f7ba50c892556a26a
+      CompatibleRuntimes:
+      - python3.6
+  AmazonJobDetailsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AMAZON_JOB_DETAILS
+      SSESpecification:
+        KMSMasterKeyId: alias/aws/dynamodb
+        SSEEnabled: 'true'
+        SSEType: KMS
+      AttributeDefinitions:
+      - AttributeName: job_id
+        AttributeType: S
+      - AttributeName: job_post_date
+        AttributeType: S
+      KeySchema:
+      - AttributeName: job_id
+        KeyType: HASH
+      - AttributeName: job_post_date
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  AmazonJobCrawlerLF:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 600
+      MemorySize: 2048
+      CodeUri: s3://innovalab-working-bucket/b67588ab1452c5f7ff49c435700e669b
+      FunctionName: amazonJobCrawler
+      Handler: index.lambda_handler
+      Runtime: python3.6
+      AutoPublishAlias: prod
+      Layers:
+      - Ref: ChromeHeadlessLayer
+      - Ref: SeleniumLayer
+      Environment:
+        Variables:
+          tableName:
+            Ref: AmazonJobDetailsTable
+          searchPages:
+            Ref: SearchPages
+      Policies:
+      - AWSLambdaExecute
+      - CloudWatchFullAccess
+      - AmazonS3FullAccess
+      - AmazonDynamoDBFullAccess
